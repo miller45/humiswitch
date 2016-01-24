@@ -1,14 +1,15 @@
-#include <dht.h>
+#include <DHT22.h>
 
-#define DHT11_PIN A1//A1
+#define DHT22_PIN A1
 
-const long ccDHT11PollMillis=2000;
+const long ccDHT11PollMillis=3000;
 long tDeferHumi=0;
 
-dht DHT;
+// Setup a DHT22 instance
+DHT22 myDHT22(DHT22_PIN);
 
 boolean _humiSensorIsReady=false;
-int lastCHK=DHTLIB_ERROR_TIMEOUT;
+int lastCHK=DHT_ERROR_DATA_TIMEOUT; 
 
 
 void HumiSensorDutys(){
@@ -18,20 +19,35 @@ void HumiSensorDutys(){
     return;
   }
   
-  int chk = DHT.read11(DHT11_PIN);
+  DHT22_ERROR_t chk = myDHT22.readData();
 
   switch (chk)
   {
-    case DHTLIB_OK:  
+    case DHT_ERROR_NONE:
       _humiSensorIsReady=true;
       break;
-    case DHTLIB_ERROR_CHECKSUM: 
+      case DHT_BUS_HUNG:
+      _humiSensorIsReady=false;
+//      Serial.println("BUS Hung ");
+      break;
+    case DHT_ERROR_NOT_PRESENT:
+//      Serial.println("Not Present ");
       _humiSensorIsReady=false;
       break;
-    case DHTLIB_ERROR_TIMEOUT: 
+    case DHT_ERROR_ACK_TOO_LONG:
+//      Serial.println("ACK time out ");
       _humiSensorIsReady=false;
       break;
-    default: 	
+    case DHT_ERROR_SYNC_TIMEOUT:
+//      Serial.println("Sync Timeout ");
+      _humiSensorIsReady=false;
+      break;
+    case DHT_ERROR_DATA_TIMEOUT:
+//      Serial.println("Data Timeout ");
+      _humiSensorIsReady=false;
+      break;
+    case DHT_ERROR_TOOQUICK:
+//      Serial.println("Polled to quick ");
       _humiSensorIsReady=false;
       break;
   }  
@@ -47,11 +63,11 @@ boolean IsHumiSensorReady(){
 }
 
 int GetCurrentHumidity(){
-  int res=DHT.humidity;  
+  int res=myDHT22.getHumidityInt()/10;
   return res;
 }
 
 int GetCurrentTemperature(){
-  int res=DHT.temperature;  
+  int res=myDHT22.getTemperatureCInt()/10;
   return res;
 }

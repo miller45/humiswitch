@@ -3,7 +3,7 @@
 const long ccFANDEFER=10000;
 const long ccLCDDEFER=100;
 const long ccBUTTONDEFER=3000;
-const long ccENSUREFANDEFER=120000;
+const long ccENSUREFANDEFER=12000;
 const int ccRELAYSUSTAIN=2000;
 const int ccMaxSensWheel=5;
 boolean FanShouldBeOn=false;
@@ -45,7 +45,7 @@ void loop(){
   boolean button1IsOn=IsButton1On();  
   // Poti
  
-  int curPot=ReadPotiValueMapped(30,65);  
+  int curPot=ReadPotiValueMapped(30,75);  
   
   CurMaxOn=curPot;
   CurMaxOff=curPot;

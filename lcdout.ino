@@ -204,7 +204,7 @@ void LCDPrintDHTState(int state,boolean flipFlop, boolean fanShouldBeOn){
 
 void LCDPrintBtnState(int state,long lastOffTime){
 
-  lcd.setCursor(10,1);
+  lcd.setCursor(11,1);
 //  dtostrf(state,2, 0, genBuffer);
 //  lcd.print(genBuffer);
   dtostrf(lastOffTime,6, 0, genBuffer);
@@ -242,7 +242,7 @@ void ButtonSensorDutys(){
   int nd=CalcOnTime(mnow, tLastBtnOffTime);
   LCDPrintBtnState(keyP,nd);   
     if(keyP==KEYPAD_UP){    
-        if(curfakePoti+nd<1023){
+        if(curfakePoti+nd<1024){
            curfakePoti+=nd;
         }
     }
