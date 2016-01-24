@@ -1,50 +1,19 @@
-/*
-  LiquidCrystal Library 
- 
- using a 16x2 LCD display.  The LiquidCrystal
- library works with all LCD displays that are compatible with the 
- Hitachi HD44780 driver. There are many of them out there, and you
- can usually tell them by the 16-pin interface.
-  
-  The circuit (default):
- * LCD RS pin to digital pin 12
- * LCD Enable pin to digital pin 11
- * LCD D4 pin to digital pin 5
- * LCD D5 pin to digital pin 4
- * LCD D6 pin to digital pin 3
- * LCD D7 pin to digital pin 2
- * LCD R/W pin to ground
- * 10K resistor:
- * ends to +5V and ground
- * wiper to LCD VO pin (pin 3)
- 
- Library originally added 18 Apr 2008
- by David A. Mellis
- library modified 5 Jul 2009
- by Limor Fried (http://www.ladyada.net)
- example added 9 Jul 2009
- by Tom Igoe
- modified 22 Nov 2010
- by Tom Igoe
- 
- This example code is in the public domain.
-
- http://www.arduino.cc/en/Tutorial/LiquidCrystal
- */
 
 #define startupdelay 1000
 
 // include the library code:
 #include <LiquidCrystal.h>
+#include <LCDKeypad.h>
 
 int ccDegree=0;
 int ccDegreeCelsius=1;
 int ccRHumidity=2;
 
 
-// initialize the library with the numbers of the interface pins
-//sparkfun model  LiquidCrystal lcd(2, 3, 4, 5, 6, 7, 8); //bus 1
-LiquidCrystal lcd(3, 4, 9, 10,11,12);
+LCDKeypad lcd;
+
+
+
 // make custom character degree
 byte degreebits[8] = {
   0b01100,
@@ -149,29 +118,29 @@ byte ccArrowDownCharBits[8] = {
   0b00000
 };
 
- 
- 
+
+
 
 static char humBuffer[15];
 static char tmpBuffer[15];
 static char genBuffer[15];
 
 void LCDOutInit(){
-//   lcd.begin(16, 2);
-   delay(startupdelay);
-   lcd.begin(8, 2);
-   lcd.createChar(ccDegree, degreebits);
-   lcd.createChar(ccDegreeCelsius, degreecelsiusbits);
-   lcd.createChar(ccRHumidity,rhumiditybits);
-   lcd.createChar(ccPercentWithr,ccPercentWithrBits),
-   lcd.createChar(ccArrowUpChar,ccArrowUpCharBits),
-   lcd.createChar(ccArrowDownChar,ccArrowDownCharBits),
-   lcd.clear();
-   lcd.print("LCDinit");   
-   lcd.write(ccDegreeCelsius);
-   delay(1000);
-   lcd.setCursor(0,0);
-   lcd.print("        ");
+  //   lcd.begin(16, 2);
+  delay(startupdelay);
+  lcd.begin(16, 2);
+  lcd.createChar(ccDegree, degreebits);
+  lcd.createChar(ccDegreeCelsius, degreecelsiusbits);
+  lcd.createChar(ccRHumidity,rhumiditybits);
+  lcd.createChar(ccPercentWithr,ccPercentWithrBits),
+  lcd.createChar(ccArrowUpChar,ccArrowUpCharBits),
+  lcd.createChar(ccArrowDownChar,ccArrowDownCharBits),
+  lcd.clear();
+  lcd.print("LCDinit");   
+  lcd.write(ccDegreeCelsius);
+  delay(1000);
+  lcd.setCursor(0,0);
+  lcd.print("        ");
   // delay(5000);
 }
 
@@ -214,19 +183,103 @@ void LCDPrintDHTState(int state,boolean flipFlop, boolean fanShouldBeOn){
   dtostrf(state,2, 0, genBuffer);
   lcd.print(genBuffer);
   lcd.setCursor(4,1);
-//  lcd.print(" ");
+  //  lcd.print(" ");
   lcd.setCursor(7,1);
   if(fanShouldBeOn){
-     lcd.write(ccArrowUpChar);
-  }else{
-     lcd.write(ccArrowDownChar);
+    lcd.write(ccArrowUpChar);
+  }
+  else{
+    lcd.write(ccArrowDownChar);
   }
   if(flipFlop){
-      lcd.cursor();
-      //lcd.write(ccFlipONChar);
-  }else{
-      lcd.noCursor();
-      //lcd.write(ccFlipOFFChar);
+    lcd.cursor();
+    //lcd.write(ccFlipONChar);
+ }
+  else{
+    lcd.noCursor();
+    //lcd.write(ccFlipOFFChar);
   }
 
 }
+
+void LCDPrintBtnState(int state,long lastOffTime){
+
+  lcd.setCursor(10,1);
+//  dtostrf(state,2, 0, genBuffer);
+//  lcd.print(genBuffer);
+  dtostrf(lastOffTime,6, 0, genBuffer);
+  lcd.print(genBuffer);
+  
+}
+
+
+
+
+int curfakePoti=0;
+
+
+long tLastBtnOffTime=0;
+
+
+
+boolean IsButton1On(){
+  boolean result=false;
+  int keyP=ReadKeyPad();
+  if(keyP==KEYPAD_SELECT){
+    result=true;
+  }
+  return result;
+}
+
+void ButtonSensorDutys(){
+  long mnow=millis();
+  boolean go=true;
+  // nothing so far
+  int keyP=ReadKeyPad();
+  if(keyP==KEYPAD_NONE){
+     tLastBtnOffTime=mnow;
+  }
+  int nd=CalcOnTime(mnow, tLastBtnOffTime);
+  LCDPrintBtnState(keyP,nd);   
+    if(keyP==KEYPAD_UP){    
+        if(curfakePoti+nd<1023){
+           curfakePoti+=nd;
+        }
+    }
+    else
+      if(keyP==KEYPAD_DOWN){
+        if(curfakePoti-nd>0){
+           curfakePoti-=nd;
+        }
+
+      }
+ 
+}
+
+float CalcOnTime(long nowTime,long lastTime){
+  float m=nowTime;
+  float l=lastTime;
+  float cdiff=(m-l);
+  
+  return cdiff/500;
+}
+
+
+int ReadKeyPad()
+{
+  int buttonPressed=lcd.button();  
+  return buttonPressed;
+}
+
+
+int ReadPotiValueMapped(int from, int to){
+  int raw=curfakePoti;
+  //  raw=512;
+  int mapped=map(raw,0,1023,from,to);
+  return constrain(mapped,from,to);
+}
+
+void PotiSensorDutys(){
+}
+
+

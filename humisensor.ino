@@ -1,6 +1,6 @@
 #include <dht.h>
 
-#define DHT11_PIN 8
+#define DHT11_PIN A1//A1
 
 const long ccDHT11PollMillis=2000;
 long tDeferHumi=0;

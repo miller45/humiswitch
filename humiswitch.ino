@@ -12,7 +12,7 @@ boolean FanChange=false;
 long tDefer=0;
 long tDeferLcdOut=0;
 long tDeferEnsureFan=0;
-int CurPoti=0;
+
 int CurMaxOn=0;
 int CurMaxOff=0;
 int CurTemperature=0;
@@ -44,7 +44,7 @@ void loop(){
   // Button
   boolean button1IsOn=IsButton1On();  
   // Poti
-  CurPoti=ReadPotiValueRaw();
+ 
   int curPot=ReadPotiValueMapped(30,65);  
   
   CurMaxOn=curPot;
