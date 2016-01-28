@@ -1,7 +1,7 @@
 
 
-int relay1Pin=17;
-int relay2Pin=16;
+int relay1Pin=3; //on
+int relay2Pin=12; //off
 
 long tRELAY1=0; // millis when to switch off relay1
 long tRELAY2=0;

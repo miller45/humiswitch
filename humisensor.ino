@@ -1,6 +1,6 @@
 #include <DHT22.h>
 
-#define DHT22_PIN A1
+#define DHT22_PIN 11
 
 const long ccDHT11PollMillis=3000;
 long tDeferHumi=0;
